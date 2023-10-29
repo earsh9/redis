@@ -103,12 +103,12 @@ static inline size_t sdslen(const sds s) {
 
 static inline size_t sdsavail(const sds s) {
     unsigned char flags = s[-1];
-    switch(flags&SDS_TYPE_MASK) {
+    switch(flags&SDS_TYPE_MASK) {           //取与，只看最后三位来确定使用的是哪种 sds 结构体
         case SDS_TYPE_5: {
             return 0;
         }
         case SDS_TYPE_8: {
-            SDS_HDR_VAR(8,s);
+            SDS_HDR_VAR(8,s);               //计算 sds 的地址：sh = s - sizeof(struct sdshdrXX)
             return sh->alloc - sh->len;
         }
         case SDS_TYPE_16: {
@@ -222,7 +222,7 @@ sds sdsempty(void);
 sds sdsdup(const sds s);
 void sdsfree(sds s);
 sds sdsgrowzero(sds s, size_t len);
-sds sdscatlen(sds s, const void *t, size_t len);
+sds sdscatlen(sds s, const void *t, size_t len);            //字符串拼接
 sds sdscat(sds s, const char *t);
 sds sdscatsds(sds s, const sds t);
 sds sdscpylen(sds s, const char *t, size_t len);
@@ -237,7 +237,7 @@ sds sdscatprintf(sds s, const char *fmt, ...);
 #endif
 
 sds sdscatfmt(sds s, char const *fmt, ...);
-sds sdstrim(sds s, const char *cset);
+sds sdstrim(sds s, const char *cset);                     //去除首尾指定字符串
 void sdssubstr(sds s, size_t start, size_t len);
 void sdsrange(sds s, ssize_t start, ssize_t end);
 void sdsupdatelen(sds s);
@@ -251,7 +251,7 @@ sds sdsfromlonglong(long long value);
 sds sdscatrepr(sds s, const char *p, size_t len);
 sds *sdssplitargs(const char *line, int *argc);
 sds sdsmapchars(sds s, const char *from, const char *to, size_t setlen);
-sds sdsjoin(char **argv, int argc, char *sep);
+sds sdsjoin(char **argv, int argc, char *sep);              //以 sep 为间隔拼接字符串数组
 sds sdsjoinsds(sds *argv, int argc, const char *sep, size_t seplen);
 int sdsneedsrepr(const sds s);
 
