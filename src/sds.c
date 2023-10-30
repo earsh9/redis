@@ -124,7 +124,7 @@ sds _sdsnewlen(const void *init, size_t initlen, int trymalloc) {
     s = (char*)sh+hdrlen;
     fp = ((unsigned char*)s)-1;         // |.len|.alloc|.flag | buf('h')        | 'e' | 'l' | 'l' | 'o' | '\0' | ...
                                         // | sh |      | fp   | s (sh + hdrlen) |
-    usable = usable-hdrlen-1;
+    usable = usable-hdrlen-1;           // 等同于 alloc
     if (usable > sdsTypeMaxSize(type)) // 真实申请到的内存块大小超过 struct sdshdr 的最大承载量
         usable = sdsTypeMaxSize(type);
     switch(type) {
@@ -276,7 +276,7 @@ sds _sdsMakeRoomFor(sds s, size_t addlen, int greedy) {
     } else {
         /* Since the header size changes, need to move the string forward,
          * and can't use realloc */
-        newsh = s_malloc_usable(hdrlen+newlen+1, &usable);
+        newsh = s_malloc_usable(hdrlen+newlen+1, &usable);          //重新申请内存
         if (newsh == NULL) return NULL;
         memcpy((char*)newsh+hdrlen, s, len+1);          //将字符串 copy 到新申请的 sds 对应位置
         s_free(sh);
