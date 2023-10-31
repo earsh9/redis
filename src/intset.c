@@ -164,18 +164,18 @@ static intset *intsetUpgradeAndAdd(intset *is, int64_t value) {
 
     /* First set new encoding and resize */
     is->encoding = intrev32ifbe(newenc);
-    is = intsetResize(is,intrev32ifbe(is->length)+1);
+    is = intsetResize(is,intrev32ifbe(is->length)+1); // realloc
 
     /* Upgrade back-to-front so we don't overwrite values.
      * Note that the "prepend" variable is used to make sure we have an empty
      * space at either the beginning or the end of the intset. */
     while(length--)
-        _intsetSet(is,length+prepend,_intsetGetEncoded(is,length,curenc));
+        _intsetSet(is,length+prepend,_intsetGetEncoded(is,length,curenc)); // 把第 i 个元素，放到第 i + prepend 个位置上去
 
     /* Set the value at the beginning or the end. */
-    if (prepend)
+    if (prepend) // 负数
         _intsetSet(is,0,value);
-    else
+    else // 正数
         _intsetSet(is,intrev32ifbe(is->length),value);
     is->length = intrev32ifbe(intrev32ifbe(is->length)+1);
     return is;
@@ -183,13 +183,13 @@ static intset *intsetUpgradeAndAdd(intset *is, int64_t value) {
 
 static void intsetMoveTail(intset *is, uint32_t from, uint32_t to) {
     void *src, *dst;
-    uint32_t bytes = intrev32ifbe(is->length)-from;
+    uint32_t bytes = intrev32ifbe(is->length)-from; // bytes 现在的意义是需要挪动多少个元素
     uint32_t encoding = intrev32ifbe(is->encoding);
 
     if (encoding == INTSET_ENC_INT64) {
-        src = (int64_t*)is->contents+from;
-        dst = (int64_t*)is->contents+to;
-        bytes *= sizeof(int64_t);
+        src = (int64_t*)is->contents+from;      // 待插入的位置
+        dst = (int64_t*)is->contents+to;        // 目标位置的首地址
+        bytes *= sizeof(int64_t);               // bytes 现在的意义是需要挪动多少个字节
     } else if (encoding == INTSET_ENC_INT32) {
         src = (int32_t*)is->contents+from;
         dst = (int32_t*)is->contents+to;
@@ -218,7 +218,7 @@ intset *intsetAdd(intset *is, int64_t value, uint8_t *success) {
         /* Abort if the value is already present in the set.
          * This call will populate "pos" with the right position to insert
          * the value when it cannot be found. */
-        if (intsetSearch(is,value,&pos)) {
+        if (intsetSearch(is,value,&pos)) { // 如果存在返回1，否则返回0；返回0时，pos指向可以被插入的位置
             if (success) *success = 0;
             return is;
         }
